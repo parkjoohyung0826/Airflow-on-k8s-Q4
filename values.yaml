@@ -50,53 +50,17 @@ redis:
 # DAG 설정
 # ------------------------------------------------------------
 dags:
-
-  # 과제 조건:
-  # DAG PersistentVolume을 사용하지 않고
-  # GitHub → git-sync 방식 사용
   persistence:
     enabled: false
 
   gitSync:
     enabled: true
-
-    # --------------------------------------------------------
-    # 반드시 네 Public GitHub Repository 주소로 수정
-    #
-    # 예:
-    # https://github.com/parkjoohyung/week8-assignment.git
-    # --------------------------------------------------------
-    repo: "https://github.com/parkjoohyung0826/Airflow-on-k8s-8week.git"
-
-    # GitHub 기본 branch
+    repo: "https://github.com/parkjoohyung0826/Airflow-on-k8s-Q4.git"
     branch: "main"
-
-    # 현재 branch HEAD
     rev: "HEAD"
-
-    # shallow clone
     depth: 1
-
-    # --------------------------------------------------------
-    # Repository 안에서 DAG가 들어있는 경로
-    #
-    # GitHub:
-    #
-    # repository/
-    # └── Q4/
-    #     └── airflow-dags/
-    #         ├── bronze_realestate_collect.py
-    #         ├── silver_realestate_transform.py
-    #         ├── gold_realestate_aggregate.py
-    #         └── hello_gitsync.py
-    #
-    # --------------------------------------------------------
-    subPath: "Q4/airflow-dags"
-
-    # git sync 간격(초)
+    subPath: "airflow-dags"
     wait: 60
-
-    # 연속 sync 실패 허용 수
     maxFailures: 0
 
 
