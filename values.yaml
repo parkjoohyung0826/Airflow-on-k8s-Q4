@@ -1,0 +1,128 @@
+# ============================================================
+# Q4 - Apache Airflow on Kubernetes
+# Helm Chart: apache-airflow/airflow 1.16.0
+# ============================================================
+
+# ------------------------------------------------------------
+# Airflow Executor
+# 로컬 과제 환경이므로 LocalExecutor 사용
+# ------------------------------------------------------------
+executor: LocalExecutor
+
+
+# ------------------------------------------------------------
+# PostgreSQL
+# 과제 조건: postgresql.enabled = true
+#
+# 기존 bitnami/postgresql 이미지의 과거 태그가
+# Docker Hub에서 조회되지 않아 bitnamilegacy 사용
+# ------------------------------------------------------------
+postgresql:
+  enabled: true
+
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/postgresql
+    tag: 16.1.0-debian-11-r15
+    pullPolicy: IfNotPresent
+
+  auth:
+    enablePostgresUser: true
+    postgresPassword: postgres
+    username: airflow
+    password: airflow
+    database: airflow
+
+  primary:
+    persistence:
+      enabled: false
+
+
+# ------------------------------------------------------------
+# Redis
+# LocalExecutor에서는 필요하지 않음
+# ------------------------------------------------------------
+redis:
+  enabled: false
+
+
+# ------------------------------------------------------------
+# DAG 설정
+# ------------------------------------------------------------
+dags:
+
+  # 과제 조건:
+  # DAG PersistentVolume을 사용하지 않고
+  # GitHub → git-sync 방식 사용
+  persistence:
+    enabled: false
+
+  gitSync:
+    enabled: true
+
+    # --------------------------------------------------------
+    # 반드시 네 Public GitHub Repository 주소로 수정
+    #
+    # 예:
+    # https://github.com/parkjoohyung/week8-assignment.git
+    # --------------------------------------------------------
+    repo: "https://github.com/parkjoohyung0826/Airflow-on-k8s-8week.git"
+
+    # GitHub 기본 branch
+    branch: "main"
+
+    # 현재 branch HEAD
+    rev: "HEAD"
+
+    # shallow clone
+    depth: 1
+
+    # --------------------------------------------------------
+    # Repository 안에서 DAG가 들어있는 경로
+    #
+    # GitHub:
+    #
+    # repository/
+    # └── Q4/
+    #     └── airflow-dags/
+    #         ├── bronze_realestate_collect.py
+    #         ├── silver_realestate_transform.py
+    #         ├── gold_realestate_aggregate.py
+    #         └── hello_gitsync.py
+    #
+    # --------------------------------------------------------
+    subPath: "Q4/airflow-dags"
+
+    # git sync 간격(초)
+    wait: 60
+
+    # 연속 sync 실패 허용 수
+    maxFailures: 0
+
+
+# ------------------------------------------------------------
+# 로그 PersistentVolume 비활성화
+# ------------------------------------------------------------
+logs:
+  persistence:
+    enabled: false
+
+
+# ------------------------------------------------------------
+# Airflow 예제 DAG 비활성화
+#
+# Airflow UI에서 우리가 만든 DAG 4개만 보기 위함
+# ------------------------------------------------------------
+config:
+  core:
+    load_examples: "False"
+
+
+# ------------------------------------------------------------
+# Webserver
+# Kubernetes 내부에서는 ClusterIP 사용
+# 로컬에서는 kubectl port-forward로 접속
+# ------------------------------------------------------------
+webserver:
+  service:
+    type: ClusterIP
